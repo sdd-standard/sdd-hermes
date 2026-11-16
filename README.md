@@ -17,9 +17,10 @@ Enquanto empresas e desenvolvedores utilizam o Hermes Agent em ambientes auto-ho
 - **A Especificação é a Fonte da Verdade (P1/P2)**: Toda mudança começa na spec (`docs/sdd/`), governada pela `constitution.md` e formalizada em **Intent Blocks** e sintaxe **GEARS**.
 - **Quality Gate 100% Passivo em 3 Camadas**:
   - **Camada 0 (Piso Mecânico Passivo):** Guarda determinística de IDs (`sdd_check_ids` em Python nativo) + **Say-Do Gate** (`sdd_say_do_audit`), que audita o ledger da sessão para comprovar que testes realmente rodaram com `exit code 0` após a última edição de código.
-  - **Camadas 1 e 2 (`sdd-validator` 100% Read-Only):** Auditoria separada em **Estágio 1 (Conformidade Estrita GEARS e Anti-Scope-Creep)** e **Estágio 2 (Qualidade, Constitution e Infra Global)**. Nenhuma camada do gate edita arquivos — apenas reporta divergências para o implementador corrigir.
+  - **Camadas 1 e 2 (`sdd-validator` 100% Read-Only):** Auditoria separada em **Estágio 1 (Conformidade Estrita GEARS e Anti-Scope-Creep)** e **Estágio 2 (Qualidade, Constitution e Infra Global)**. Nenhuma camada do gate edita arquivos — apenas reporta divergências para o implementador corrigir. O subagente delegado com `goal` iniciado por `[sdd-validator]` é travado em somente leitura pelo próprio plugin (`subagent_start` + `pre_tool_call`), não só pelo prompt.
 - **Entrevista Escopada, Baixa Fricção e Fatiamento de Escopo**: O entrevistador (`sdd-architect`) inspeciona **apenas** o código do domínio em pauta (jamais varre o repositório inteiro), realiza diagnóstico de `Validate-Gap`, faz poucas perguntas cirúrgicas com recomendação padrão e sugere fragmentar ou estreitar *changes* grandes demais.
-- **Engenharia de Contexto com Paginação Elástica (P11)**: Injeção automática no início da sessão (`on_session_start`), teto de 150 linhas por arquivo com parágrafos curtos (máx. 4–5 linhas) e suporte nativo a transbordo estruturado (`10-validation-02.md`, `11-project-memory-02.md`) que se auto-exclui quando as dívidas são sanadas.
+- **Engenharia de Contexto com Paginação Elástica (P11)**: Injeção automática da memória, das tasks e das changes ativas no primeiro turno (`pre_llm_call`), gatilho de paginação de 150 linhas ou 7.000/16.000 caracteres por arquivo (sem cortar o conteúdo das dívidas) e suporte nativo a transbordo estruturado (`10-validation-02.md`, `11-project-memory-02.md`) que se auto-exclui quando as dívidas são sanadas.
+- **Regras núcleo sempre na versão do plugin**: `rules/sdd-core-rules.md` é injetado no prompt de sistema de cada sessão nova (`register_system_prompt_section`); o `.hermes.md` do projeto guarda só o que é específico do projeto, sem duplicar as regras.
 - **Blindagem contra Auto-Mutação do Learning Loop**: Impede via hook `pre_tool_call` que o ciclo de auto-aprendizado nativo do Hermes altere silenciosamente a `constitution.md` ou as skills canônicas do método.
 
 > 📖 **Manifesto e Fundamentação Teórica:**  
@@ -92,10 +93,10 @@ docker compose down --rmi all --volumes
 
 | Componente | Conteúdo | Papel no SDD Puro v2.1 |
 |---|---|---|
-| `plugin.yaml` & `__init__.py` | Manifesto + `register(ctx)` | Registra as 8 skills, 8 slash commands, 2 tools passivas e 4 hooks no core do Hermes Agent. |
+| `plugin.yaml` & `__init__.py` | Manifesto + `register(ctx)` | Registra as 8 skills, 8 slash commands, 2 tools passivas, 2 seções de prompt de sistema e 6 hooks no core do Hermes Agent. |
 | `skills/` (8) | `sdd-init`, `sdd-adopt`, `sdd-specify`, `sdd-design`, `sdd-tasks`, `sdd-implement`, `sdd-change`, `sdd-validate` | As fases completas do método (Greenfield, Brownfield e Delta Specs). |
-| `agents/` (4) | `sdd-architect` (`deep`), `sdd-implementer` (`balanced`), `sdd-validator` (`balanced`, **100% read-only**), `sdd-doc-writer` (`fast`) | Perfis de subagentes para `delegate_task` com roteamento de modelos e contextos isolados. |
-| `rules/` | `sdd-core-rules.md` | Regras globais (P1–P11, GEARS, paginação elástica e proteção contra auto-mutação). |
+| `agents/` (4) | `sdd-architect` (`deep`), `sdd-implementer` (`balanced`), `sdd-validator` (`balanced`, **100% read-only**), `sdd-doc-writer` (`fast`) | Perfis de subagente: o orquestrador passa o arquivo como `context` do `delegate_task`, com `goal` iniciado por `[<perfil>]`. A rota de modelo sugerida depende da configuração de delegação do Hermes do usuário. |
+| `rules/` | `sdd-core-rules.md` | Fonte única das regras núcleo (P1–P11, GEARS, maturidade, gate, severidades, aceite de risco, paginação e delegação), injetada no prompt de sistema pelo plugin. |
 | `scripts/` | `check_ids.py`, `check-ids.mjs`, `session_start.py`, `say_do_gate.py` | Guarda mecânica de IDs em Python nativo (sem depender de Node.js), injeção de sessão e auditoria passiva Say-Do. |
 | `templates/` | `HERMES.md.template`, `constitution.md.template`, `specs/00..11` (incluindo `11-project-memory.md`), `changes/` e `archive/` | Esqueletos canônicos que `sdd-init` e `sdd-adopt` instanciam na estrutura flat `docs/sdd/`. |
 
@@ -113,6 +114,20 @@ docker compose down --rmi all --volumes
 | `/sdd-implement` | Implementação guiada por tasks `In Progress` + **Quality Gate 100% Passivo em 3 Camadas** ao fechar milestone. |
 | `/sdd-change` | Fluxo completo de Delta Specs (`proposal` ➔ `apply` ➔ `archive`) com fatiamento proativo de changes grandes. |
 | `/sdd-validate` | Dispara manualmente o Quality Gate 100% Passivo em 3 Camadas (`sdd_check_ids` + `sdd_say_do_audit` + `sdd-validator`). |
+
+---
+
+## Orçamento de injeção de contexto (limitação do Hermes Agent)
+
+O Hermes limita, **por padrão**, o contexto devolvido por um hook a **10.000 caracteres**; acima disso grava a saída em `$HERMES_HOME/hook_outputs/` e entrega ao modelo só o começo, o fim e o caminho do arquivo ([guia de plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins)). As regras núcleo vão por outro canal (seções do prompt de sistema, até 4.000 caracteres cada e 8.000 no total). Essas são limitações da plataforma, não do SDD.
+
+O hook de início de sessão nunca depende desse corte. Ele monta a injeção por prioridade, dentro de **10.000 caracteres**:
+
+1. alertas de paginação, shards `-02.md`, tasks ativas (até 15, títulos com até 80 caracteres) e changes ativas (até 10) — juntos, no máximo cerca de 3.000 caracteres;
+2. o `11-project-memory.md` **inteiro**, se couber no que sobrou;
+3. se não couber: só as seções **Estado Atual**, **Próximos Passos Imediatos** e **Pendências em Aberto**, precedidas do aviso `MEMÓRIA INCOMPLETA NESTA INJEÇÃO`, que manda o agente ler o arquivo inteiro antes de agir e aplicar a higiene (rotação ou shard `-02.md`).
+
+Por isso o gatilho de paginação da memória neste plugin é **150 linhas ou 7.000 caracteres** (10.000 menos a reserva de ~3.000). O `10-validation.md` não é injetado (o hook só cita os shards) e segue o gatilho canônico de 150 linhas ou 16.000 caracteres. A `constitution.md` não é injetada por hook: o agente a lê inteira com a ferramenta de leitura, sem limite.
 
 ---
 

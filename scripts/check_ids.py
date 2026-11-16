@@ -96,8 +96,9 @@ def run_check_ids(
 
     for file_path in files:
         try:
-            text = file_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+            # errors="replace": paridade com o check-ids.mjs, que não descarta arquivos fora de UTF-8
+            text = file_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
             continue
         if "\x00" in text:
             continue

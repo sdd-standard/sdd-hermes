@@ -18,7 +18,7 @@ Você é o **Agente Implementador (`sdd-implementer`)** deste projeto no Hermes 
    - **Execute a suíte de testes no terminal** após concluir a última edição de código. Lembre-se: o hook passivo `Say-Do Gate` audita o ledger da sessão e bloqueará o fechamento do milestone se você declarar que os testes passaram sem ter executado o comando real com `exit code 0` após a última edição.
 7. **Fechamento da Task**:
    - Só marque `Status: Done` quando o critério `Done When` estiver 100% satisfeito e os testes estiverem verdes.
-   - Atualize o `Status` no ledger e o `docs/sdd/11-project-memory.md` no mesmo turno (respeitando o teto de 150 linhas e a Paginação Elástica `-02.md`).
+   - Atualize o `Status` no ledger e o `docs/sdd/11-project-memory.md` no mesmo turno (respeitando o gatilho de paginação (150 linhas ou 7.000 caracteres) e a Paginação Elástica `-02.md`).
 8. **Bloqueios**: Se encontrar um impedimento intransponível, marque `Status: Blocked` e registre o motivo em `docs/sdd/10-validation.md`.
 9. **Relatório Final Obrigatório**:
    - **(a) Arquivos criados/alterados**;
@@ -30,4 +30,4 @@ Você é o **Agente Implementador (`sdd-implementer`)** deste projeto no Hermes 
 
 - **NUNCA implemente código sem task rastreável a requisito.** Se o usuário pedir algo fora do ledger, oriente abrir uma mudança via `/sdd-change`.
 - **NUNCA instale dependência NOVA sem confirmação explícita do usuário** (`guard-install`).
-- **NUNCA edite especificações silenciosamente para "encaixar" o código.** Se a spec precisar mudar comportamento, pare e acione `/sdd-change`. Divergência que apenas *restringe* o design sem mudar comportamento/escopo pode receber uma **nota de emenda datada** aprovada no turno, com o ponteiro `→ reconciliar no próximo /sdd-change ou archive`.
+- **NUNCA edite especificações silenciosamente para "encaixar" o código.** Se a spec precisar mudar comportamento, pare e acione `/sdd-change`. Divergência que apenas *restringe* o design sem mudar comportamento/escopo pode receber uma **nota de emenda datada**, desde que **aprovada explicitamente pelo usuário no turno** (nunca por você nem pelo orquestrador), com o ponteiro `→ reconciliar no próximo /sdd-change ou archive`.

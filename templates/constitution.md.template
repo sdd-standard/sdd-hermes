@@ -1,6 +1,7 @@
 # Constitution — {{PROJECT_NAME}}
 
 Princípios inegociáveis. Toda spec, design, task e código é validado contra este documento. Só muda por decisão explícita do usuário, registrada com justificativa e data.
+A numeração das seções 1 a 8 é canônica (skills, validador e hooks citam "seção 6", "seção 8"): não renumere; seções próprias do projeto entram a partir da 9.
 > 🔒 **Governança SDD:** Este arquivo é protegido contra auto-mutação silenciosa por loops de auto-aprendizado do agente.
 
 ## 1. Arquitetura
@@ -36,3 +37,9 @@ Princípios inegociáveis. Toda spec, design, task e código é validado contra 
 - Documentação (`sdd-doc-writer` / rota `fast`): {{MODEL_DOCS}}
 - Codificação e Validação Passiva (`sdd-implementer` & `sdd-validator` / rota `balanced`): {{MODEL_CODE}}
 - Arquitetura e Especificação (`sdd-architect` / rota `deep`): {{MODEL_ARCH}}
+
+## 8. Exceções vigentes (aceites de risco contra esta constitution)
+<!-- Só o usuário cria uma exceção, ao aceitar uma dívida Critical/High que viola uma regra acima.
+     A exceção é escopada e temporária: some daqui quando a dívida é sanada (ou vira emenda definitiva da regra).
+     Formato: - VAL-xxx — regra excetuada: <seção e regra> — escopo: <onde vale> — revisão: <data ou gatilho> — aceito por <quem> em <AAAA-MM-DD> -->
+- Nenhuma.

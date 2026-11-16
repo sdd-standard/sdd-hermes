@@ -17,17 +17,18 @@ Esta skill cria a fundação SDD em projetos existentes que ainda não possuíam
 ## Fase 2 — Constitution Extraída + Desejada
 4. Gere `docs/sdd/constitution.md` dividida em duas partes:
    - **(a) Convenções OBSERVADAS** no projeto (stack, testes, estrutura) — confirme com o usuário;
-   - **(b) Regras DESEJADAS** daqui em diante (qualidade, segurança, política de dependências).
+   - **(b) Regras DESEJADAS** daqui em diante (qualidade, segurança, política de dependências, comando oficial de testes para o `Say-Do Gate`);
+   - **(c) Calibração de criticidade do domínio** (seção 6): pergunte o que, neste negócio, eleva um achado automaticamente para `Critical` ou `High` (ex.: precisão financeira, PII/LGPD, auditoria regulatória) e o que é tolerado como `Medium`/`Low` nesta fase.
 
 ## Fase 3 — Baseline Mínima "As-Built" (Estrutura Flat em `docs/sdd/`)
-5. Crie a estrutura enxuta em `docs/sdd/` utilizando os modelos de `templates/specs/` e `templates/archive/`:
+5. Crie a estrutura enxuta em `docs/sdd/` utilizando os modelos de `templates/specs/` e `templates/archive/` (pastas da **raiz do plugin**, informada no cabeçalho deste comando; instalação padrão: `~/.hermes/plugins/sdd-workflow/`):
    - `constitution.md` — governança extraída + desejada (`templates/constitution.md.template`).
    - `00-project-brief.md` — o que o sistema é hoje e por que existe (`templates/specs/00-project-brief.md`).
    - `02-spec.md` — capacidades atuais em alto nível (seção `"As-Built"`, sem GEARS retroativo do sistema inteiro).
    - `04-domain-model.md` — mapa dos *bounded contexts* e linguagem ubíqua observada.
    - `05-design.md` — arquitetura macro atual + decisões conhecidas (marque decisões antigas como `"legado"`).
    - `07-tasks.md` — ledger vazio (`templates/specs/07-tasks.md`).
-   - `10-validation.md` — dívidas e lacunas já conhecidas (`templates/specs/10-validation.md`, com suporte a paginação elástica `10-validation-02.md` se > 150 linhas).
+   - `10-validation.md` — dívidas e lacunas já conhecidas (`templates/specs/10-validation.md`, com suporte a paginação elástica `10-validation-02.md` ao atingir o gatilho de paginação).
    - `11-project-memory.md` — estado inicial (`templates/specs/11-project-memory.md`, com suporte a paginação elástica `11-project-memory-02.md`).
    - `changes/` — pasta vazia para futuras mudanças.
    - `archive/validation-log.md` e `archive/memory-history.md` — templates vazios de cold storage (`templates/archive/*`).

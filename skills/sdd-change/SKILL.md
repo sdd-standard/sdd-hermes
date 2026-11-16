@@ -6,7 +6,7 @@ description: Ciclo completo de Delta Specs (proposal → apply → archive) com 
 # SDD Change (Delta Specs — Ciclo Completo v2.1)
 
 O fluxo `/sdd-change` governa toda evolução contínua pós-baseline (especialmente em projetos **Brownfield**).
-**Regra de Ouro:** Nunca edite diretamente os artefatos centrais em `docs/sdd/00..09` após o baseline; toda alteração passa pela máquina de 3 estados: **`proposal` → `apply` → `archive`**.
+**Regra de Ouro:** Nunca edite diretamente os artefatos de baseline em `docs/sdd/` (`00`–`06`, `08` e `09`) após o baseline; toda alteração — por menor que seja, inclusive correção urgente — passa pela máquina de 3 estados: **`proposal` → `apply` → `archive`**. (Os artefatos voláteis `07`, `10` e `11` continuam sendo atualizados a cada evento.)
 
 ---
 
@@ -27,7 +27,7 @@ O fluxo `/sdd-change` governa toda evolução contínua pós-baseline (especialm
 
 ---
 
-## Estado 2 — Validate-Gap, Delta Spec e Tasks
+## Estado 2 — Apply · Etapa A: Validate-Gap, Delta Spec e Tasks
 
 5. **Diagnóstico `Validate-Gap` (Brownfield)**:
    - Confronte o código atual do módulo tocado com a proposta aprovada, identificando o que já existe (*as-built*) vs. o que será adicionado/modificado/removido.
@@ -35,14 +35,14 @@ O fluxo `/sdd-change` governa toda evolução contínua pós-baseline (especialm
 6. **Escrita do `delta-spec.md`**:
    - Escreva `docs/sdd/changes/<nome-da-mudanca>/delta-spec.md` com as seções `ADDED`, `MODIFIED` e `REMOVED`.
    - Todo requisito funcional/não-funcional DEVE usar a sintaxe **GEARS** canônica (`[Where] [While] [When] the <subject> shall <behavior>`, com keywords em inglês) e decisões de design usam `DES-xxx`.
-   - Peça aprovação do `delta-spec.md` ao usuário.
+   - Peça aprovação do `delta-spec.md` ao usuário. O `Status` da delta só muda por decisão do usuário; liste os itens `Auto-Approved` (com `Motivo:`) ao pedir a aprovação.
 7. **Ledger da Mudança (`tasks.md`) e Gate Pré-Apply Passivo**:
    - Quebre a mudança em tarefas atômicas em `docs/sdd/changes/<nome-da-mudanca>/tasks.md` (`ID`, `Title`, `Goal`, `Related Requirements`, `Done When`, `Status: Pending`).
    - Acione o **`sdd-validator` (100% passivo / read-only)** para auditar a consistência do delta contra a `constitution.md` antes de liberar o código.
 
 ---
 
-## Estado 3 — Apply (Implementação via `/sdd-implement`)
+## Estado 2 — Apply · Etapa B: Implementação via `/sdd-implement`
 
 8. Oriente ou execute a implementação das tasks ativas via `/sdd-implement` lendo `docs/sdd/changes/<nome-da-mudanca>/tasks.md`.
    - **Nova subtarefa técnica descoberta no Apply** (mesmo requisito): declare primeiro em `tasks.md` e informe o usuário antes de codificar.
@@ -50,19 +50,20 @@ O fluxo `/sdd-change` governa toda evolução contínua pós-baseline (especialm
 
 ---
 
-## Estado 4 — Archive (Gate Passivo em 3 Camadas + Consolidação + Higiene Elástica)
+## Estado 3 — Archive (Gate Passivo em 3 Camadas + Consolidação + Higiene Elástica)
 
 Ao concluir todas as tasks da mudança:
 
 9. **Quality Gate Final Passivo em 3 Camadas**:
-   - Rode a **Camada 0 Passiva**: `sdd_check_ids` (`python scripts/check_ids.py .`) + `sdd_say_do_audit` (comprovando testes verdes após a última edição).
-   - Acione o **`sdd-validator` (100% passivo)** para auditar em 2 estágios (`1. Conformidade GEARS` e `2. Qualidade & Infra Global`). Qualquer divergência reportada é corrigida pelo implementador antes de consolidar.
+   - Rode a **Camada 0 Passiva**: tools `sdd_check_ids` + `sdd_say_do_audit` (comprovando testes verdes após a última edição).
+   - **Curto-circuito:** se houver siglas órfãs ou o `sdd_say_do_audit` não retornar `VERIFIED_PASS`, **não acione o validador**: corrija/rode os testes e repita a Camada 0. `NO_EVIDENCE` não é aprovação — rode o comando oficial de testes (constitution §3) e re-audite.
+   - Só com o piso limpo, acione o **`sdd-validator` (100% passivo)** para auditar em 2 estágios (`1. Conformidade GEARS` e `2. Qualidade & Infra Global`). Qualquer divergência reportada é corrigida pelo implementador antes de consolidar.
 10. **Consolidação na Baseline (`docs/sdd/`)**:
     - Incorpore as seções `ADDED`, `MODIFIED` e `REMOVED` do `delta-spec.md` nos artefatos centrais (`02-spec.md`, `03-requirements.md`, `04-domain-model.md`, `05-design.md`, `08-acceptance.md` e `09-traceability.md`).
 11. **Higiene de Dívidas e Paginação Elástica (*Overflow Sharding*)**:
     - Dívidas do `10-validation.md` (ou `10-validation-02.md`) resolvidas por esta change devem ser **MOVIDAS** para `docs/sdd/archive/validation-log.md` com `"Fechado por: sdd-change <nome>"`.
-    - Se novos achados abertos fizerem `10-validation.md` passar de 150 linhas, crie/atualize `10-validation-02.md` e linke no topo.
-    - Se, após sanar dívidas, o conteúdo de `10-validation-02.md` voltar a caber no `10-validation.md` principal (`≤ 150 linhas`), **consolide no arquivo principal, remova o link e EXCLUA o arquivo `10-validation-02.md`**.
+    - Se novos achados abertos fizerem `10-validation.md` atingir o gatilho de paginação (150 linhas ou 16.000 caracteres), crie/atualize `10-validation-02.md` e linke no topo.
+    - Se, após sanar dívidas, o conteúdo de `10-validation-02.md` voltar a caber no `10-validation.md` principal (dentro dos dois tetos), **consolide no arquivo principal, remova o link e EXCLUA o arquivo `10-validation-02.md`**.
 12. **Arquivamento e Rotação de Memória**:
     - Mova a pasta `docs/sdd/changes/<nome-da-mudanca>/` inteira para `docs/sdd/archive/<nome-da-mudanca>/`.
     - Atualize `docs/sdd/11-project-memory.md` mantendo apenas as ~5 mudanças mais recentes e movendo o resumo das mais antigas para `docs/sdd/archive/memory-history.md` (compactando e excluindo `11-project-memory-02.md` se não for mais necessário).

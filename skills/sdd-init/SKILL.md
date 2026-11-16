@@ -14,9 +14,10 @@ Esta skill inicia o workflow **Spec-Driven Development (SDD Puro v2.1)** do zero
      - Padrões de arquitetura e stack tecnológica fixa;
      - Política de testes e comando oficial de verificação (para o `Say-Do Gate`);
      - Regras de segurança/LGPD e git flow;
+     - **Calibração de criticidade do domínio** (seção 6 da Constitution): o que, neste negócio, eleva um achado automaticamente para `Critical` ou `High` (ex.: precisão financeira, PII/LGPD, auditoria regulatória, contrato de API pública) e o que é tolerado como `Medium`/`Low` nesta fase;
      - Modelos disponíveis no Hermes do usuário para o roteamento de subagentes (`deep` para `sdd-architect`, `balanced` para `sdd-implementer` e `sdd-validator`, `fast` para `sdd-doc-writer`).
 3. **Criação da Árvore Canônica Flat (`docs/sdd/`)**:
-   Copie os templates do plugin (`templates/specs/*` → `docs/sdd/` e `templates/archive/*` → `docs/sdd/archive/`) na raiz do projeto:
+   Copie os templates do plugin (`templates/specs/*` → `docs/sdd/` e `templates/archive/*` → `docs/sdd/archive/`) para a raiz do projeto. A pasta `templates/` fica na **raiz do plugin** (informada no cabeçalho deste comando; instalação padrão: `~/.hermes/plugins/sdd-workflow/`), não no projeto do usuário:
    - `docs/sdd/constitution.md` — baseado na entrevista (`templates/constitution.md.template`) e nos princípios P1 a P11 (protegido contra auto-mutação silenciosa).
    - `docs/sdd/00-project-brief.md` a `docs/sdd/09-traceability.md` — esqueletos canônicos (a partir de `templates/specs/`).
    - `docs/sdd/07-tasks.md` — ledger de execução inicial (vazio).
@@ -26,7 +27,7 @@ Esta skill inicia o workflow **Spec-Driven Development (SDD Puro v2.1)** do zero
    - `docs/sdd/archive/validation-log.md` — cold storage append-only de débitos resolvidos.
    - `docs/sdd/archive/memory-history.md` — cold storage append-only de mudanças finalizadas.
 4. **Contexto Nativo do Hermes (`.hermes.md`)**:
-   - Instancie o arquivo `.hermes.md` na raiz do projeto a partir de `templates/HERMES.md.template`, preenchendo nome, descrição curta e stack do projeto.
+   - Instancie o arquivo `.hermes.md` na raiz do projeto a partir de `templates/HERMES.md.template`, preenchendo nome, descrição curta e stack do projeto. Não copie as regras núcleo do SDD para ele: o plugin já as injeta no prompt de sistema de cada sessão a partir de `rules/sdd-core-rules.md`.
 5. **Próximo Passo**:
    - Oriente o usuário a avançar para `/sdd-specify`.
 

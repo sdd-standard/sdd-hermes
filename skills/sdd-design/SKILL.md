@@ -8,7 +8,7 @@ description: Conduz as fases de Design SDD (04→06) — Diagnóstico Validate-G
 O Requisito (GEARS) define **O QUE** o sistema deve fazer; o Design define **COMO** ele vai atingir isso respeitando a `constitution.md`.
 
 ## Pré-condição:
-- `02-spec.md` e `03-requirements.md` (ou `delta-spec.md` ativo) devem estar pelo menos em estado `Reviewed`/`Approved`.
+- `02-spec.md` e `03-requirements.md` (ou `delta-spec.md` ativo) devem estar pelo menos em estado `Reviewed`/`Approved`. Se a base estiver só em `Reviewed`, registre antes a dívida de maturidade (`Type: Maturity`, com snapshot dos IDs e do texto consumidos) no `10-validation.md`; o `Status` dos artefatos só muda por decisão do usuário.
 
 ## Passos:
 1. **Diagnóstico Pré-Design Escopado (`Validate-Gap`)**:
@@ -22,7 +22,7 @@ O Requisito (GEARS) define **O QUE** o sistema deve fazer; o Design define **COM
    - **`06-roadmap.md`**: Fatiamento em MVP e milestones sequenciais com critérios claros de avanço.
 4. **Validação Passiva e Memória**:
    - Submeta o design ao check passivo do **`sdd-validator`** (verificando se nenhum requisito ficou órfão de design e se não há violação da `constitution.md`).
-   - Atualize `docs/sdd/11-project-memory.md` (respeitando o teto de 150 linhas e a Paginação Elástica `-02.md`).
+   - Atualize `docs/sdd/11-project-memory.md` (respeitando o gatilho de paginação (150 linhas ou 7.000 caracteres) e a Paginação Elástica `-02.md`).
 
 ## Próximo Passo:
 Oriente o usuário a usar `/sdd-tasks` para derivar o ledger de execução (`07-tasks.md`), critérios de aceite (`08-acceptance.md`) e matriz de rastreabilidade (`09-traceability.md`).

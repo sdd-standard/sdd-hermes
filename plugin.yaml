@@ -1,11 +1,16 @@
 name: sdd-workflow
 version: "2.1.0"
+manifest_version: 2
+api_version: 1
 description: "Spec-Driven Development (SDD Puro v2.1) para Hermes Agent. Operacionaliza Constitution, GEARS, Delta Specs, Quality Gate 100% Passivo em 3 Camadas (com Say-Do Gate), Entrevista Escopada e Paginação Elástica de Memória."
 author: "Maurissi <devmaurissi@gmail.com>"
 license: "MIT"
-repository: "https://github.com/sdd-standard/sdd-hermes"
+homepage: "https://github.com/sdd-standard/sdd-hermes"
+# Versão mínima do core: o instalador recusa a instalação quando a restrição não é atendida.
 requires_hermes: ">=0.21.0"
 
+# Skills e slash commands são registrados em código (`ctx.register_skill` / `ctx.register_command`
+# em `register(ctx)`); o manifesto só declara tools e hooks.
 provides_tools:
   - sdd_check_ids
   - sdd_say_do_audit
@@ -15,13 +20,5 @@ provides_hooks:
   - pre_llm_call
   - pre_tool_call
   - post_tool_call
-
-provides_commands:
-  - sdd-init
-  - sdd-adopt
-  - sdd-specify
-  - sdd-design
-  - sdd-tasks
-  - sdd-implement
-  - sdd-change
-  - sdd-validate
+  - subagent_start
+  - subagent_stop
