@@ -1,0 +1,64 @@
+# {{PROJECT_NAME}} — Contexto do Projeto (Hermes Agent + SDD Puro v2.1)
+
+{{DESCRICAO_CURTA}}
+
+Stack: {{STACK}}
+
+## Metodologia: Spec-Driven Development (plugin `sdd-workflow` / `sdd-hermes`)
+
+A fonte da verdade é `docs/sdd/`. O código expressa a especificação, nunca a substitui.
+Padrão Canônico: https://github.com/sdd-standard/spec-driven-development
+
+- `docs/sdd/constitution.md` — princípios inegociáveis do projeto. Valide TUDO contra ela.
+- `docs/sdd/` — estrutura canônica flat (artefatos `00-project-brief.md` a `11-project-memory.md`).
+- `docs/sdd/changes/` — mudanças ativas (`proposal.md` + `delta-spec.md` + `tasks.md`).
+- `docs/sdd/11-project-memory.md` — estado vivo entre sessões (com suporte a paginação elástica `11-project-memory-02.md`).
+- `docs/sdd/10-validation.md` — backlog vivo de dívidas ativas (com suporte a paginação elástica `10-validation-02.md`).
+
+### Princípios Canônicos (P1 a P11)
+- **P1**: A especificação é a fonte da verdade (mudança começa na spec).
+- **P2**: Constitution precede a especificação (governa todas as fases).
+- **P3**: A especificação deve ser viva (evolui com o software).
+- **P4**: Rastreabilidade obrigatória (`Intent → GEARS → DES → TASK → AC → Teste → Código`).
+- **P5**: Requisitos verificáveis (proibido termos vagos; use métricas observáveis).
+- **P6**: Ambiguidade tratada cedo (lacunas viram `PENDENTE DE DEFINIÇÃO` + `10-validation.md`).
+- **P7**: Design vem antes da execução (arquitetura e decisões antes de código).
+- **P8**: Tarefas derivam dos artefatos (nenhuma task no ledger sem vínculo).
+- **P9**: Validação contínua em gates **100% passivos** (auditoria no código real antes de fechar milestone).
+- **P10**: SDD não é Waterfall (especificação incremental, feedback contínuo).
+- **P11**: Estado fora do chat (memória viva persistida em disco e injetada na sessão).
+
+### Matriz Canônica de Severidades (Quality Gates + Calibração via `constitution.md`)
+- **`Critical` (BLOQUEIA)**: Violação da `constitution.md`, falha de segurança/dados, quebra do Piso Mecânico (`check-ids` ou testes falhando/não executados após edição), regressão ou cláusula `shall` principal não atendida.
+- **`High` (BLOQUEIA)**: Omissão de condição GEARS (`Where`/`While`/`When`), falha na Infraestrutura Global (middlewares, auth, rotas raiz, banco), requisito sem teste cobrindo seu `AC-xxx` ou *scope creep* fora da spec.
+- **`Medium` (NÃO BLOQUEIA → `10-validation.md`)**: Desvio parcial de `DES-xxx` sem afetar comportamento (`FR`/`AC`), borda secundária sem teste automatizado, item de QA manual ou dívida restrita ao módulo.
+- **`Low` (NÃO BLOQUEIA → `10-validation.md`)**: Divergência cosmética, nomenclatura interna menor ou melhoria opcional.
+*(Nota: Regras específicas na seção 6 da `docs/sdd/constitution.md` calibram e podem elevar a criticidade conforme o domínio deste projeto).*
+
+## Protocolo de Início de Sessão (OBRIGATÓRIO)
+
+Leia nesta ordem antes de trabalhar: `constitution.md` → `11-project-memory.md` → `10-validation.md` → tasks `Pending`/`In Progress` (e verifique se há avisos de arquivos paginados `-02.md`). Confirme estado e próximo passo em até 5 linhas.
+
+## Regras Estritas de Execução e Governança (v2.1)
+
+- **Zero código sem task ativa**: Nunca implemente código sem task com Status `In Progress` rastreável a um `FR-xxx`/`NFR-xxx`.
+- **Entrevista Escopada e Fatiamento**: Ao especificar ou abrir uma mudança (`/sdd-change`), inspecione **apenas** o código do domínio/módulo em pauta (nunca o repositório inteiro). Faça no máximo 3 a 5 perguntas cirúrgicas com recomendação padrão. Se a mudança pedida pelo usuário for grande demais, proponha fragmentá-la em múltiplas changes ou estreitar a atual e registrar o excedente como dívida ativa/escopo futuro.
+- **Paginação Elástica com Auto-Exclusão (*Overflow Sharding*)**: `11-project-memory.md` e `10-validation.md` têm teto de **150 linhas por arquivo** e **máximo de 4–5 linhas por parágrafo** (proibido criar parágrafos-quilômetro de linha única). Se ultrapassar 150 linhas de conteúdo ativo legítimo, crie `10-validation-02.md` ou `11-project-memory-02.md`, referencie no topo do arquivo principal e **exclua o arquivo `-02.md` assim que as dívidas/frentes forem sanadas** e voltarem a caber no arquivo principal.
+- **Quality Gate 100% Passivo em 3 Camadas**:
+  - Ao fechar um milestone ou change, rode primeiro a **Camada 0 Passiva**: `sdd_check_ids` (ou `python scripts/check_ids.py .`) e `sdd_say_do_audit` (confirmação mecânica de execução dos testes após a última edição).
+  - Em seguida, acione o subagente **`sdd-validator` (100% passivo / read-only)** para auditar em 2 estágios: **Estágio 1 (Conformidade GEARS/AC estrita)** e **Estágio 2 (Qualidade, Constitution e Infra Global)**.
+  - Nenhuma camada do gate edita arquivos; todas apenas reportam divergências para o implementador corrigir.
+- **Imutabilidade contra Auto-Mutação do Learning Loop**: O *learning loop* nativo do Hermes Agent NUNCA deve alterar silenciosamente `docs/sdd/constitution.md` nem as skills canônicas do plugin `sdd-workflow`. Aprendizados do projeto vão para `11-project-memory.md`.
+- **Confirmação de dependências**: SEMPRE confirme com o usuário antes de instalar dependências novas (`guard-install`).
+
+## Fluxo por Fase no Hermes Agent
+
+| Fase | Comando / Skill Hermes |
+|---|---|
+| Bootstrap (novo / existente) | `/sdd-init` · `/sdd-adopt` |
+| Brief → Discovery → Spec → Requirements (GEARS) | `/sdd-specify` |
+| Validate-Gap → Domain → Design → Roadmap | `/sdd-design` |
+| Tasks → Acceptance → Traceability | `/sdd-tasks` |
+| Executar task (+ Gate Passivo em 3 Camadas) | `/sdd-implement` |
+| Quality Gate Manual (Passivo em 3 Camadas) | `/sdd-validate` |
+| Mudança Evolutiva (Delta Spec: proposal → apply → archive) | `/sdd-change` |

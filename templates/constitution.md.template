@@ -1,0 +1,38 @@
+# Constitution — {{PROJECT_NAME}}
+
+Princípios inegociáveis. Toda spec, design, task e código é validado contra este documento. Só muda por decisão explícita do usuário, registrada com justificativa e data.
+> 🔒 **Governança SDD:** Este arquivo é protegido contra auto-mutação silenciosa por loops de auto-aprendizado do agente.
+
+## 1. Arquitetura
+<!-- clean architecture? DDD? monorepo? padrões obrigatórios? -->
+
+## 2. Stack fixa
+<!-- linguagens, frameworks, versões pinadas -->
+
+## 3. Política de testes
+<!-- unidade obrigatória onde? E2E como? integração quando? cobertura mínima? comando oficial de execução para o Say-Do Gate? -->
+
+## 4. Segurança e conformidade
+<!-- authN/authZ, dados sensíveis, LGPD, auditoria, criptografia -->
+
+## 5. Processo e governança
+<!-- git flow, política de docs, regra de instalação de deps, aprovações -->
+
+## 6. Calibração de criticidade do domínio (Severidades no Quality Gate)
+<!-- Além da Matriz Canônica Universal SDD (Critical/High bloqueiam; Medium/Low viram dívida ativa),
+     defina aqui o que o domínio específico deste projeto considera inegociável:
+     - O que eleva automaticamente um achado para Critical neste negócio? (ex: precisão financeira, LGPD/PII, perda de estado, auditoria, contrato de API pública)
+     - O que eleva para High? (ex: SLAs de latência, idempotência de filas, acessibilidade obrigatória)
+     - O que pode ser tratado como Medium/Low nesta fase do produto? -->
+- **Eleva para `Critical` neste projeto:**
+- **Eleva para `High` neste projeto:**
+- **Tolerado como `Medium`/`Low` nesta fase:**
+
+## 7. Roteamento de modelos no Hermes Agent (economia de tokens via delegate_task)
+<!-- Preencher durante a entrevista do sdd-init/sdd-adopt com os modelos configurados no Hermes do usuário.
+     Exemplos Anthropic: Haiku (docs/fast) · Sonnet (código/validação/balanced) · Opus (arquitetura/deep).
+     Exemplos Google Gemini: Flash (docs/fast) · Pro (código/validação/balanced) · Argon/Pro High (arquitetura/deep).
+     Exemplos OpenRouter / Nous: configurar rotas correspondentes no config.yaml do Hermes. -->
+- Documentação (`sdd-doc-writer` / rota `fast`): {{MODEL_DOCS}}
+- Codificação e Validação Passiva (`sdd-implementer` & `sdd-validator` / rota `balanced`): {{MODEL_CODE}}
+- Arquitetura e Especificação (`sdd-architect` / rota `deep`): {{MODEL_ARCH}}
