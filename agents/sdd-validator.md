@@ -26,6 +26,7 @@ Quando acionado após fases de especificação, design ou delta-spec (pré-apply
 - Conflito com `constitution.md` ou violação dos princípios P1 a P11?
 - Pendências `PENDENTE DE DEFINIÇÃO` não registradas em `10-validation.md`?
 - Sintaxe GEARS mal formada (sem sujeito explícito, sem `shall`, keyword traduzida para português, ou confusão entre `Where` estático e `While` dinâmico)?
+- Violação do ciclo de maturidade (`Draft → Reviewed → Approved`): artefato derivado a partir de artefato anterior que ainda está em `Status: Draft` (sem ter atingido pelo menos `Reviewed`)?
 - Violação da regra de **Paginação Elástica (*Overflow Sharding*)**: arquivo `10-validation.md` ou `11-project-memory.md` com mais de 150 linhas sem shard `-02.md`, ou com "parágrafos-quilômetro" de uma única linha (> 5 linhas visuais)?
 
 ---
