@@ -18,7 +18,7 @@ Intent Block: `Goal / Expectation / Action / Result`.
 GEARS, keywords sempre em inglês: `[Where <estático>] [While <estado>] [When <gatilho>] the <subject> shall <comportamento observável>.`
 
 ## Protocolo de sessão
-Leia `constitution.md` → `11-project-memory.md` (injetado) → `10-validation.md` → tasks e changes ativas (injetadas). Confirme estado e próximo passo em até 5 linhas antes de agir.
+Leia `constitution.md` → `11-project-memory.md` (injetado) → `10-validation.md` → tasks e changes ativas (injetadas). Confirme estado e próximo passo em até 5 linhas e prossiga com o pedido do usuário no mesmo turno (a confirmação não substitui a ação).
 
 ## Maturidade `Draft → Reviewed → Approved`
 - Só o usuário muda o `Status` de um artefato; pode aprovar vários de uma vez. O agente nunca se autopromove.

@@ -160,6 +160,19 @@ def _trim(ledger: List[Dict[str, Any]]) -> None:
         _SESSION_LEDGERS.pop(next(iter(_SESSION_LEDGERS)))
 
 
+def _write_failed(result: Any) -> bool:
+    """True quando o resultado (string JSON do Hermes) indica que a escrita não aconteceu."""
+    data = result
+    if isinstance(result, str):
+        try:
+            data = json.loads(result)
+        except (ValueError, TypeError):
+            return False
+    if not isinstance(data, dict):
+        return False
+    return bool(data.get("error")) or data.get("success") is False
+
+
 def record_tool_event(
     session_id: str,
     tool_name: str,
@@ -183,6 +196,10 @@ def record_tool_event(
             exit_code=_extract_exit_code(result),
         )
     elif t_name in CODE_WRITE_TOOLS:
+        if _write_failed(result):
+            # Escrita negada/falhou (ex.: fora do HERMES_WRITE_SAFE_ROOT, arquivo não lido antes):
+            # nada mudou em disco, então não invalida a prova (paridade com Claude/Antigravity).
+            return
         path = str(args.get("path") or args.get("file_path") or args.get("Path") or "")
         is_sdd_doc = "docs/sdd/" in path.replace("\\", "/")
         entry.update(kind="doc_write" if is_sdd_doc else "code_write", path=path)

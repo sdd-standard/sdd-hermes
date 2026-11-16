@@ -242,7 +242,7 @@ def build_session_context(workspace: str | Path = ".") -> str:
             parts.append(
                 f"SDD Context — Tasks não concluídas ({len(active)}):\n"
                 f"{joined}{more}\n\n"
-                "Siga o protocolo SDD: confirme o estado atual e o próximo passo em até 5 linhas antes de agir."
+                "Siga o protocolo SDD: confirme o estado atual e o próximo passo em até 5 linhas e prossiga com o pedido do usuário no mesmo turno (a confirmação não substitui a ação)."
             )
 
     # 5. Changes ativas (uma linha por change; o conteúdo é carregado sob demanda pelas skills)

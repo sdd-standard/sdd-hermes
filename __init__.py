@@ -287,7 +287,7 @@ def _as_tool_result(payload: Dict[str, Any]) -> str:
 
 def _handle_check_ids_tool(params: Dict[str, Any] | None = None, **_kwargs: Any) -> str:
     params = params or {}
-    root = params.get("root") or os.getcwd()
+    root = params.get("root") or _session_cwd()
     strict = bool(params.get("strict", False))
     extra_raw = params.get("extra_prefixes") or ""
     extra = [p.strip() for p in str(extra_raw).split(",") if p.strip()]
@@ -303,6 +303,21 @@ def _handle_say_do_tool(params: Dict[str, Any] | None = None, **kwargs: Any) -> 
     return _as_tool_result(audit_session_ledger(session_id=session_id, all_sessions=all_sessions))
 
 
+def _session_cwd() -> str:
+    """Diretório de trabalho DA SESSÃO, não do processo.
+
+    No gateway do Hermes (usado também pelo `hermes -z` e pelas plataformas de mensagem) o processo roda em
+    `/run/hermes-service/...`; o diretório do projeto vem da sessão (`TERMINAL_CWD` / cwd da sessão).
+    A doc de plugins manda usar `agent.runtime_cwd.resolve_agent_cwd()`; `os.getcwd()` só como fallback.
+    """
+    try:
+        from agent.runtime_cwd import resolve_agent_cwd
+
+        return str(resolve_agent_cwd())
+    except Exception:
+        return os.getcwd()
+
+
 def _touch_session(kwargs: Dict[str, Any]) -> str:
     session_id = str(kwargs.get("session_id") or "default")
     _ACTIVE_SESSION["id"] = session_id
@@ -310,7 +325,7 @@ def _touch_session(kwargs: Dict[str, Any]) -> str:
 
 
 def _workspace_from(kwargs: Dict[str, Any]) -> str:
-    return str(kwargs.get("workspace") or kwargs.get("cwd") or os.getcwd())
+    return str(kwargs.get("workspace") or kwargs.get("cwd") or _session_cwd())
 
 
 def _on_session_start(**kwargs: Any) -> None:
@@ -437,7 +452,7 @@ def _is_inside_plugin(raw_path: str) -> bool:
     try:
         candidate = Path(raw_path).expanduser()
         if not candidate.is_absolute():
-            candidate = Path(os.getcwd()) / candidate
+            candidate = Path(_session_cwd()) / candidate
         candidate.resolve().relative_to(PLUGIN_ROOT)
         return True
     except (ValueError, OSError):

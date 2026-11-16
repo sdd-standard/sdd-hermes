@@ -50,42 +50,49 @@ cp -r ./sdd-hermes/* ~/.hermes/plugins/sdd-workflow/
 
 ---
 
-### Opção C — Uso / Teste 100% Isolado via Docker (Zero Rastros no Windows/Host)
-Se você está no Windows (ou qualquer host) e não deseja instalar o Hermes localmente, pode rodar o agente (ou o ambiente OS Desktop pré-configurado do Hermes) inteiramente via Docker:
+### Opção C — Uso / Teste Isolado via Docker (imagem oficial `nousresearch/hermes-agent`)
+Roteiro validado com o Hermes Agent v0.23.1. Todo o estado do Hermes fica no volume `/opt/data`. Use um **volume nomeado**: uma pasta do Windows montada ali chega com permissão `0777` e o Hermes se recusa a usá-la (`unsafe_control_permissions`).
 
-#### 1. Container CLI / Gateway Enxuto (`nousresearch/hermes-agent`)
 ```powershell
-# Teste descartável (--rm apaga o container ao sair) montando o plugin e o seu projeto:
-docker run --rm -it `
-  -v "${PWD}/sdd-hermes:/root/.hermes/plugins/sdd-workflow" `
-  -v "${PWD}/meu-projeto:/workspace" `
-  -w /workspace `
-  nousresearch/hermes-agent:latest
+# 1. Container de trabalho com o projeto montado em /workspace
+docker volume create hermes-data
+# HERMES_WRITE_SAFE_ROOT: a imagem só permite escrever em /opt/data; inclua /workspace (lista separada por ":")
+docker run -d --name hermes -e HERMES_WRITE_SAFE_ROOT=/opt/data:/workspace -v hermes-data:/opt/data -v "${PWD}/meu-projeto:/workspace" nousresearch/hermes-agent:stable sleep infinity
+
+# 2. Plugin direto do GitHub (mesmo comando da Opção A)
+docker exec -u hermes hermes hermes plugins install sdd-standard/sdd-hermes --enable
+docker exec -u hermes hermes hermes plugins validate /opt/data/plugins/sdd-workflow
+
+# 3. Sessão interativa no projeto
+docker exec -it -u hermes -w /workspace hermes hermes
 ```
 
-#### 2. Container OS Desktop Pré-Configurado (`nousresearch/hermes-agent-desktop`)
-Empacota um sistema operacional Linux/Ubuntu Desktop completo com Chrome embutido (acessível via navegador na porta `6080`) e API Gateway na porta `8642`:
+Modelo local com Ollama no host: o Hermes exige **pelo menos 64.000 tokens de contexto** (configure no servidor Ollama, por exemplo `OLLAMA_CONTEXT_LENGTH=65536`) e alcança o host por `http://host.docker.internal:11434/v1`:
 
-```yaml
-# docker-compose.yml
-services:
-  hermes-desktop:
-    image: nousresearch/hermes-agent-desktop:latest
-    container_name: hermes-sdd-desktop
-    ports:
-      - "6080:6080" # Interface visual Desktop (noVNC / Browser)
-      - "8642:8642" # Hermes Gateway API
-    volumes:
-      - ./sdd-hermes:/opt/data/plugins/sdd-workflow
-      - ./meu-projeto:/workspace
-    environment:
-      - VNC_PASSWORD=sddpassword
-```
-
-Para encerrar e remover qualquer vestígio da máquina host após o uso:
 ```powershell
-docker compose down --rmi all --volumes
+docker exec -u hermes hermes hermes config set model.provider custom
+docker exec -u hermes hermes hermes config set model.base_url http://host.docker.internal:11434/v1
+docker exec -u hermes hermes hermes config set model.default <modelo-com-suporte-a-tools>
+docker exec -u hermes hermes hermes config set model.context_length 65536
 ```
+
+Para remover tudo depois do uso:
+```powershell
+docker rm -f hermes
+docker volume rm hermes-data
+docker rmi nousresearch/hermes-agent:stable
+```
+
+### Aprovações humanas e o modo `hermes -z`
+O guard-install e a edição da `constitution.md` pedem **aprovação humana** (`{"action": "approve"}`). O Hermes decide como esse pedido é respondido conforme o modo de execução:
+
+| Modo | O que acontece com um pedido de aprovação do plugin |
+|---|---|
+| Chat interativo (`hermes`, TUI) e gateways com canal de aprovação | O usuário é perguntado. |
+| `hermes chat -q ... --oneshot` | Bloqueado (fail-closed), a menos que `approvals.single_query_mode: approve`. |
+| `hermes -z ...` | **Aprovado automaticamente** — por desenho do Hermes, o `-z` roda sem ninguém para responder e libera todo pedido de aprovação. |
+
+**Não use `hermes -z` para trabalho SDD que possa instalar dependências ou alterar a constitution.** Os bloqueios do plugin (`{"action": "block"}`: skills e regras canônicas, subagente `[sdd-validator]` somente leitura) continuam valendo em todos os modos.
 
 ---
 
